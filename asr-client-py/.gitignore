@@ -1,0 +1,6 @@
+.idea
+__pycache__
+venv
+RecognizeService_pb2.py
+RecognizeService_pb2.pyi
+RecognizeService_pb2_grpc.py
