@@ -1,10 +1,16 @@
 import client
 import RecognizeService_pb2 as recognizeFields
+import os
 
 
 def execute_streaming_recognize():
     stub = client.create_stub()
-    responses = stub.StreamingRecognize(get_streaming_requests())
+    access_token=os.getenv('SL_TOKEN')
+    if access_token:
+        metadata = (('authorization', 'Bearer ' + access_token),)
+        responses = stub.StreamingRecognize(get_streaming_requests(), metadata=metadata)
+    else:
+        responses = stub.StreamingRecognize(get_streaming_requests())
 
     client.print_message("Streaming Recognize")
     for response in responses:

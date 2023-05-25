@@ -44,3 +44,10 @@ python3 sync_recognize.py
 ```
 python3 streaming_recognize.py
 ```
+
+7) Para enviar o token nas requisições de reconheciment exporte a variável:
+
+```
+export SL_TOKEN=<TOKEN>
+```
+
