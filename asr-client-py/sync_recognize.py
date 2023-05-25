@@ -1,10 +1,17 @@
 import client
 import RecognizeService_pb2 as recognizeFields
+import os
 
 
 def execute_sync_recognize():
     stub = client.create_stub()
-    response = stub.Recognize(create_sync_request())
+
+    access_token=os.getenv('SL_TOKEN')
+    if access_token:
+        metadata = (('authorization', 'Bearer ' + access_token),)
+        response = stub.Recognize(create_sync_request(), metadata=metadata)
+    else:
+        response = stub.Recognize(create_sync_request())
 
     client.print_message("Synchronous Recognize")
     print(response)
