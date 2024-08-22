@@ -1,4 +1,5 @@
 import client
+from client import settings
 import RecognizeService_pb2 as recognizeFields
 import os
 
@@ -6,19 +7,25 @@ import os
 def execute_streaming_recognize():
     stub = client.create_stub()
     access_token=os.getenv('SL_TOKEN')
+    meta=settings.metadata
+    meta_par=meta_val='x-null'
+    if meta:
+        meta_par=meta[0:meta.find(':')]
+        meta_val=meta[meta.find(':')+1:]
     if access_token:
-        metadata = (('authorization', 'Bearer ' + access_token),)
+        metadata = (('authorization', 'Bearer ' + access_token), (meta_par, meta_val),)
         responses = stub.StreamingRecognize(get_streaming_requests(), metadata=metadata)
     else:
         responses = stub.StreamingRecognize(get_streaming_requests())
 
     client.print_message("Streaming Recognize")
     for response in responses:
-        print(response)
+        client.print_result(response)
 
 
 def get_streaming_requests():
-    audio_file = open("bank-transfira-8k.wav", "rb")
+    file_name = settings.audio_name
+    audio_file = open(file_name, "rb")
 
     config = create_streaming_config_request()
     yield config

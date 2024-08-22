@@ -51,3 +51,5 @@ python3 streaming_recognize.py
 export SL_TOKEN=<TOKEN>
 ```
 
+8) Configurações: é possível alterar as configurações no arquivo [.env](File:./.env)
+
