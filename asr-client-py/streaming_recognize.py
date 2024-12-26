@@ -2,7 +2,8 @@ import client
 from client import settings
 import RecognizeService_pb2 as recognizeFields
 import os
-
+import time
+import grpc
 
 def execute_streaming_recognize():
     stub = client.create_stub()
@@ -14,9 +15,9 @@ def execute_streaming_recognize():
         meta_val=meta[meta.find(':')+1:]
     if access_token:
         metadata = (('authorization', 'Bearer ' + access_token), (meta_par, meta_val),)
-        responses = stub.StreamingRecognize(get_streaming_requests(), metadata=metadata)
+        responses = stub.StreamingRecognize(get_streaming_requests(), metadata=metadata, timeout=settings.timeout)
     else:
-        responses = stub.StreamingRecognize(get_streaming_requests())
+        responses = stub.StreamingRecognize(get_streaming_requests(), timeout=settings.timeout)
 
     client.print_message("Streaming Recognize")
 
@@ -49,6 +50,7 @@ def get_streaming_requests():
             print("Will Cancel")
             break
         i = i + 1
+        time.sleep(settings.chunk_interval)
 
     if settings.do_cancel == 0:
         yield recognizeFields.StreamingRecognizeRequest(media=audio_chunk, last_packet=True)

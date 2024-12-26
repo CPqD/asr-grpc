@@ -22,7 +22,9 @@ class Settings(BaseSettings):
     continuous_mode: bool = False
     do_cancel: int = 0
     timeout: int = 2
+    chunk_interval: float = 0.005
     chunk_size: int = 800
+    encoding: str = "WAV"
 
     class Config:
         env_file = ".env"
@@ -61,8 +63,12 @@ def create_stub():
 def get_config():
     language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="text/uri-list",
                                                                      uri=settings.language_model_uri)
+    if settings.encoding == "WAV":
+        audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.WAV
+    else:
+        audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.LINEAR16
     return recognizeFields.RecognitionConfig(lm=[language_model],
-                                             audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.WAV,
+                                             audio_encoding=audio_encoding,
                                              age_scores_enabled=settings.do_age_class,
                                              gender_scores_enabled=settings.do_gender_class,
                                              emotion_scores_enabled=settings.do_emotion_class,
