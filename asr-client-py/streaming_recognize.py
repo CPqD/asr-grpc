@@ -19,8 +19,15 @@ def execute_streaming_recognize():
         responses = stub.StreamingRecognize(get_streaming_requests())
 
     client.print_message("Streaming Recognize")
-    for response in responses:
-        client.print_result(response)
+
+    try:
+        for response in responses:
+            #print(response)
+            client.print_result(response)
+    except grpc._channel._MultiThreadedRendezvous as e:
+        print(type(e).__name__)
+        print(e)
+        pass
 
 
 def get_streaming_requests():
@@ -30,14 +37,21 @@ def get_streaming_requests():
     config = create_streaming_config_request()
     yield config
 
-    audio_chunk = audio_file.read(1024)
-    next_chunk = audio_file.read(1024)
+    audio_chunk = audio_file.read(settings.chunk_size)
+    next_chunk = audio_file.read(settings.chunk_size)
+    i = 0;
     while next_chunk:
         yield recognizeFields.StreamingRecognizeRequest(media=audio_chunk, last_packet=False)
         audio_chunk = next_chunk
-        next_chunk = audio_file.read(1024)
+        next_chunk = audio_file.read(settings.chunk_size)
+        if settings.do_cancel and i > do_cancel:
+            yield recognizeFields.StreamingRecognizeRequest(stop=True)
+            print("Will Cancel")
+            break
+        i = i + 1
 
-    yield recognizeFields.StreamingRecognizeRequest(media=audio_chunk, last_packet=True)
+    if settings.do_cancel == 0:
+        yield recognizeFields.StreamingRecognizeRequest(media=audio_chunk, last_packet=True)
 
     audio_file.close()
 

@@ -1,5 +1,9 @@
 import grpc
-from pydantic_settings import BaseSettings
+import pydantic
+if pydantic.version.VERSION >= "2":
+    from pydantic_settings import BaseSettings
+else:
+    from pydantic import BaseSettings
 import RecognizeService_pb2_grpc as recognizeService
 import RecognizeService_pb2 as recognizeFields
 import os
@@ -15,7 +19,10 @@ class Settings(BaseSettings):
     do_age_class: bool = False
     do_gender_class: bool = False
     do_emotion_class: bool = False
-    continuos_mode: bool = False
+    continuous_mode: bool = False
+    do_cancel: int = 0
+    timeout: int = 2
+    chunk_size: int = 800
 
     class Config:
         env_file = ".env"
@@ -59,7 +66,7 @@ def get_config():
                                              age_scores_enabled=settings.do_age_class,
                                              gender_scores_enabled=settings.do_gender_class,
                                              emotion_scores_enabled=settings.do_emotion_class,
-                                             continuous_mode=settings.continuos_mode)
+                                             continuous_mode=settings.continuous_mode)
 
 
 def print_message(message):
