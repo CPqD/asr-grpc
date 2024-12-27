@@ -74,13 +74,6 @@ CHUNK_SIZE=800
 TIMEOUT=20
 ```
 
-4) Mude o endereço e porta do servidor destino, que podem ser configurados no arquivo `client.py` na linha 7, dentro do
-   método `create_stub()`.
-
-```
-7 channel = grpc.insecure_channel("localhost:8026")
-```
-
 5) Para executar o reconhecimento síncrono, execute o seguinte comando:
 
 ```
