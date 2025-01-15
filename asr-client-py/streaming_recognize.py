@@ -1,5 +1,6 @@
 import client
 from client import settings
+from client import get_token
 import RecognizeService_pb2 as recognizeFields
 import os
 import time
@@ -7,7 +8,7 @@ import grpc
 
 def execute_streaming_recognize():
     stub = client.create_stub()
-    access_token=os.getenv('SL_TOKEN')
+    access_token=get_token()
     meta=settings.metadata
     meta_par=meta_val='x-null'
     if meta:

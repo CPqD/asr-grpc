@@ -18,7 +18,6 @@ python3 -m venv venv
 
 ```
 pip install -r requirements.txt
-pip install grpcio-tools
 ```
 
 3) Execute o comando abaixo, substituindo os valores de acordo com seus diretórios, para gerar os arquivos do protobuf
@@ -43,6 +42,11 @@ CERTIFICATE_FILE="cert_file_path"
 
 # Configure to send a sl token
 SL_TOKEN=""
+
+# Or Retrieve token from
+TOKEN_URL="https://speechp.cpqd.com.br/auth/token"
+TOKEN_USER="user"
+TOKEN_PASSWORD="password"
 
 # Language model URI
 LANGUAGE_MODEL_URI="builtin:slm/general"

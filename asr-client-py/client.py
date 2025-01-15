@@ -7,6 +7,7 @@ else:
 import RecognizeService_pb2_grpc as recognizeService
 import RecognizeService_pb2 as recognizeFields
 import os
+import requests
 
 class Settings(BaseSettings):
     server_url: str = ""
@@ -25,12 +26,25 @@ class Settings(BaseSettings):
     chunk_interval: float = 0.005
     chunk_size: int = 800
     encoding: str = "WAV"
+    token_url: str = ""
+    token_user: str = ""
+    token_password: str = ""
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
 
 settings = Settings()
+
+def get_token():
+    if len(settings.sl_token):
+        return settings.sl_token
+    if len(settings.token_url) == 0:
+        return ""
+    response=requests.post(settings.token_url, auth=(settings.token_user, settings.token_password))
+    if response.ok:
+        return response.json()['access_token']
+    raise Exception("Fail to get token!")
 
 def create_stub():
     server=settings.server_url
