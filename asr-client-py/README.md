@@ -8,10 +8,11 @@ Versão do **pip** utilizada: `23.0.1`
 
 ## Como executar o projeto
 
-1) Crie um ambiente virtual:
+1) Crie e ative um ambiente virtual:
 
 ```
 python3 -m venv venv
+source venv/bin/activate
 ```
 
 2) Instale o pacote grpcio-tools:
