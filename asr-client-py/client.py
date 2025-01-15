@@ -48,7 +48,7 @@ def create_stub():
         i=f.decode().find("CN")
         cn=f.decode()[i:]
         cert_cn = cn[5:cn.find('\n')]
-        options = (('grpc.ssl_target_name_override', cert_cn,),)
+        options = (('','',),)
         options += (('grpc.tls_skip_hostname_verification', 'true',),)
         channel_credentials = grpc.ssl_channel_credentials(f)
         print("Secure connection to: " + server)
