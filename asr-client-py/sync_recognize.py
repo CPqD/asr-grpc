@@ -1,12 +1,13 @@
 import client
 from client import settings
+from client import get_token
 import RecognizeService_pb2 as recognizeFields
 import os
 
 def execute_sync_recognize():
     stub = client.create_stub()
 
-    access_token=settings.sl_token
+    access_token=get_token()
     meta=settings.metadata
     meta_par=meta_val='x-null'
 
