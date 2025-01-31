@@ -7,18 +7,7 @@ import os
 def execute_sync_recognize():
     stub = client.create_stub()
 
-    access_token=get_token()
-    meta=settings.metadata
-    meta_par=meta_val='x-null'
-
-    if meta:
-        meta_par=meta[0:meta.find(':')]
-        meta_val=meta[meta.find(':')+1:]
-    if access_token:
-        metadata = (('authorization', 'Bearer ' + access_token), (meta_par, meta_val),)
-        response = stub.Recognize(create_sync_request(), metadata=metadata)
-    else:
-        response = stub.Recognize(create_sync_request())
+    response = stub.Recognize(create_sync_request())
 
     client.print_message("Synchronous Recognize")
     print(response)
