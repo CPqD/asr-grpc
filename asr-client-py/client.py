@@ -1,4 +1,5 @@
 import grpc
+from meta_interceptor import MetaInterceptor
 import pydantic
 if pydantic.version.VERSION >= "2":
     from pydantic_settings import BaseSettings
@@ -71,6 +72,13 @@ def create_stub():
         print("Insecure connection to: " + server)
         channel = grpc.insecure_channel(server)
     stub = recognizeService.RecognizeServiceStub(channel)
+    token = get_token()
+    if token or settings.metadata:
+        print("Token:" + token)
+        print("Metadata:" + settings.metadata)
+        interceptor = MetaInterceptor(token, settings.metadata)
+        channel = grpc.intercept_channel(channel, interceptor)
+        stub = recognizeService.RecognizeServiceStub(channel)
     return stub
 
 

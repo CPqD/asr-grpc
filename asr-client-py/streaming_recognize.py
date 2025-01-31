@@ -8,17 +8,7 @@ import grpc
 
 def execute_streaming_recognize():
     stub = client.create_stub()
-    access_token=get_token()
-    meta=settings.metadata
-    meta_par=meta_val='x-null'
-    if meta:
-        meta_par=meta[0:meta.find(':')]
-        meta_val=meta[meta.find(':')+1:]
-    if access_token:
-        metadata = (('authorization', 'Bearer ' + access_token), (meta_par, meta_val),)
-        responses = stub.StreamingRecognize(get_streaming_requests(), metadata=metadata, timeout=settings.timeout)
-    else:
-        responses = stub.StreamingRecognize(get_streaming_requests(), timeout=settings.timeout)
+    responses = stub.StreamingRecognize(get_streaming_requests(), timeout=settings.timeout)
 
     client.print_message("Streaming Recognize")
 
