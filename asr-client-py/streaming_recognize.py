@@ -8,7 +8,10 @@ import grpc
 
 def execute_streaming_recognize():
     stub = client.create_stub()
-    responses = stub.StreamingRecognize(get_streaming_requests(), timeout=settings.timeout)
+    timeout=settings.timeout
+    if settings.do_cancel:
+        timeout=1
+    responses = stub.StreamingRecognize(get_streaming_requests(), timeout=timeout)
 
     client.print_message("Streaming Recognize")
 
@@ -17,9 +20,12 @@ def execute_streaming_recognize():
             #print(response)
             client.print_result(response)
     except grpc._channel._MultiThreadedRendezvous as e:
-        print(type(e).__name__)
-        print(e)
-        pass
+        if settings.do_cancel:
+            pass
+        else:
+            print(type(e).__name__)
+            print(e)
+            raise TestStopException("Finalizando o teste com falha.")
 
 
 def get_streaming_requests():
@@ -36,7 +42,7 @@ def get_streaming_requests():
         yield recognizeFields.StreamingRecognizeRequest(media=audio_chunk, last_packet=False)
         audio_chunk = next_chunk
         next_chunk = audio_file.read(settings.chunk_size)
-        if settings.do_cancel and i > do_cancel:
+        if settings.do_cancel and i > settings.do_cancel:
             yield recognizeFields.StreamingRecognizeRequest(stop=True)
             print("Will Cancel")
             break
