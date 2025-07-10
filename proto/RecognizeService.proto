@@ -30,6 +30,8 @@ message RecognitionConfig {
     optional bool start_input_timers = 23;
     optional bool endpointer_enabled = 24;
     optional string interpret_text = 25;
+    optional bool diarization_enabled = 26;
+    optional int32 diarization_max_speakers = 27;
 
     message LanguageModel {
         optional string content_type = 1;
@@ -107,6 +109,11 @@ message RecognitionResult {
         FAILURE = 10;
     }
 
+    message DiarizationResult {
+        optional string speaker = 1;
+        optional float confidence = 2;
+    }
+
     message RecognitionAlternative {
         string text = 1;
         int32 score = 2;
@@ -120,6 +127,7 @@ message RecognitionResult {
             int32 score = 2;
             float startTime = 3;
             float endTime = 4;
+            optional DiarizationResult diarizationResult = 5;
         }
     }
 
@@ -133,9 +141,12 @@ message RecognitionResult {
     optional AgeScore age_score = 9;
     message AgeScore {
         optional string event = 1;
-        optional int32 age = 2;
-        optional string confidence = 3;
-        map<string, double> p = 4;
+        optional int32 version = 2;
+        optional int32 age = 3;
+        optional string confidence = 4;
+        map<string, double> p = 5;
+        optional string group = 6;
+        optional string stage = 7;
     }
 
     optional EmotionScore emotion_score = 10;
@@ -152,6 +163,7 @@ message RecognitionResult {
         optional string event = 1;
         optional string emotion = 2;
     }
+    optional DiarizationResult diarization_result = 12;
 }
 
 message RecognizeRequest {

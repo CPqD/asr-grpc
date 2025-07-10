@@ -18,12 +18,17 @@ npm install @grpc/grpc-js
 17 const client = new recognizeService.RecognizeService('localhost:8026', grpc.credentials.createInsecure());
 ```
 
-3) Para executar o reconhecimento síncrono:
+3) Exporte o caminho do arquivo asr-grpc/proto/RecognizeService.proto a partir do doretorio raiz do repositório
+```
+PROTO_PATH=${PWD}/proto/RecognizeService.proto
+```
+
+4) Para executar o reconhecimento síncrono:
 ```
 node syncRecognize.js
 ```
 
-4) Para executar o reconhecimento assíncrono:
+5) Para executar o reconhecimento assíncrono:
 ```
 node streamingRecognize.js
 ```
