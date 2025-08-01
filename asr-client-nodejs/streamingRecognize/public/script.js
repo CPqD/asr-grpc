@@ -87,7 +87,6 @@
           socket.send(msg.data);
         } else if (msg.type === "raw") {
           const floatSamples = new Float32Array(msg.data);
-          //drawWaveform(floatSamples);
           updateWaveform(floatSamples);
         }
       };
