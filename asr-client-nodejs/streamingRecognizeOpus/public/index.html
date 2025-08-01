@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Demo diarizaçao de locutores (Opus)</title>
+    <style>
+    textarea {
+      width: 94%;
+      height: 200px;
+      resize: vertical;
+      padding: 0.5rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      background: #ffffcc;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: -1rem;
+      margin-left: 1rem;
+    }
+    canvas {
+      display: block;
+      margin: 1rem;
+      border: 1px solid #ccc;
+      background: black;
+      max-width: 94%;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎙️ Demo diarizaçao de locutores (Opus)</h2>
+  <!--canvas id="waveform" width="1800" height="200" style="border:1px solid #ccc; background-color:black"></canvas-->
+  <canvas id="waveform" width="1800" height="200"></canvas
+  <hr />
+  <button onclick="startStream()">Start</button>
+  <button onclick="stopStream()">Stop</button>
+  <hr />
+  <h2>Result</h2>
+  <!--pre id="output"></pre-->
+  <textarea id="output" readonly placeholder="Eventos de fala aparecerão aqui..."></textarea>
+  <script src="script.js"></script>
+</body>
+</html>

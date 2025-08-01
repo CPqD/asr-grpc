@@ -1,0 +1,17 @@
+{
+  "name": "streamingRecognize",
+  "version": "1.0.0",
+  "description": "Voice recognition and diarization with node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "ws-streamingRecognize.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mic": "^2.1.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
