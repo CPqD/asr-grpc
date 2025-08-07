@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     do_cancel: int = 0
     timeout: int = 2
     chunk_interval: float = 0.005
-    chunk_size: int = 800
+    chunk_size: int = -1
     encoding: str = "WAV"
     token_url: str = ""
     token_user: str = ""
@@ -103,20 +103,60 @@ def print_message(message):
     print("#################################################\n")
 
 def print_result(response):
-    #print("Event: {}".format(response.event))
-    age="null"
-    emotion="null"
-    gender="null"
-    for r in response.result:
-            id=r.segment_index
-            if len(r.alternatives):
-                text=r.alternatives[0].text
-                if r.age_score.event == "AGE RESULT":
-                    age = r.age_score.age
-                if r.gender_score.event == "GENDER RESULT":
-                    gender = r.gender_score.gender
-                if r.emotion_class.event == "EMOTION RESULT":
-                    emotion = r.emotion_class.emotion
-                print("{}: age={} gender={} emotion={} - {}".format(id, age, gender, emotion, text))
-            else:
-                print("{}: status={}".format(id, r.status))
+    def get_status(status):
+        if status == 0:
+           return "NONE"
+        elif status == 1:
+           return "PROCESSING"
+        elif status == 2:
+           return "RECOGNIZED"
+        elif status == 3:
+           return "NO_MATCH"
+        elif status == 4:
+           return "NO_INPUT_TIMEOUT"
+        elif status == 5:
+           return "MAX_SPEECH"
+        elif status == 6:
+           return "EARLY_SPEECH"
+        elif status == 7:
+           return "RECOGNITION_TIMEOUT"
+        elif status == 8:
+           return "NO_SPEECH";
+        elif status == 9:
+           return "CANCELED"
+        elif status == 10:
+           return "FAILURE"
+    if response.event == 7:
+        print("| LISTENING |")
+    elif response.event == 1:
+        print("| START_OF_SPEECH |")
+    elif response.event == 2:
+        print("| END_OF_SPEECH |")
+    elif response.event == 4:
+        print("| FAILURE |")
+    elif response.event == 5:
+        print("| TIMEOUT |")
+    elif response.event == 6:
+        print("| INVALID_REQUEST |")
+    elif response.event == 3:
+        print("| RESULT |")
+        age="null"
+        emotion="null"
+        gender="null"
+        for r in response.result:
+                id=r.segment_index
+                speaker = "unknown"
+                if r.HasField('diarization_result'):
+                    speaker = r.diarization_result.speaker
+                print(f"  {id}: status={get_status(r.status)}")
+                if len(r.alternatives):
+                    text=r.alternatives[0].text
+                    if r.age_score.event == "AGE RESULT":
+                        age = r.age_score.age
+                    if r.gender_score.event == "GENDER RESULT":
+                        gender = r.gender_score.gender
+                    if r.emotion_class.event == "EMOTION RESULT":
+                        emotion = r.emotion_class.emotion
+                    print(f"  {id}: age={age} gender={gender} emotion={emotion} speaker={speaker} - {text}")
+                else:
+                    print(f"  {id}: status={get_status(r.status)}")
