@@ -30,9 +30,9 @@ def execute_streaming_recognize():
             pass
         else:
             print(type(e).__name__)
-            print(e)
             raise TestStopException("Finalizando o teste com falha.")
-
+    except Exception as e:
+        raise e
 
 def get_streaming_requests(stub, on_event=None):
     client.print_message("Streaming:" + settings.audio_name)
@@ -64,13 +64,16 @@ def get_streaming_requests(stub, on_event=None):
         #print(f"Data length: {len(encoded_data)}")
         time.sleep(settings.chunk_interval)
 
+    def on_completed():
+        q_audio.put(None)
+
     def encode_audio(waveform: bytes) -> bytes:
         return waveform
 
     # Assina o stream e começa a capturar áudio
     stream.pipe(
         ops.map(encode_audio)
-    ).subscribe_(on_next)
+    ).subscribe_(on_next=on_next, on_completed=on_completed)
 
     def reader():
         config = create_streaming_config_request()
@@ -106,7 +109,7 @@ def get_streaming_requests(stub, on_event=None):
         while True:
             chunk = q_audio.get()
             if chunk is None:
-                print("break")
+                print("<End of Audio>")
                 break
             yield chunk
 
@@ -119,6 +122,7 @@ def get_streaming_requests(stub, on_event=None):
                 print(f"{event}")
     except Exception as e:
         print(f"Erro no streaming gRPC: {e}")
+        raise e
 
     audio_file.close()
 
@@ -129,4 +133,8 @@ async def get_message(audio_chunk, last, stop = False):
     return recognizeFields.StreamingRecognizeRequest(media=audio_chunk, stop=stop, last_packet=last)
 
 if __name__ == "__main__":
-    execute_streaming_recognize()
+    try:
+        execute_streaming_recognize()
+        exit(0)
+    except Exception as e:
+        exit(1)
