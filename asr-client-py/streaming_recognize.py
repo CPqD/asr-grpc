@@ -55,7 +55,7 @@ def get_streaming_requests(stub, on_event=None):
         if len(encoded_data):
             chunk_msg = recognizeFields.StreamingRecognizeRequest(media=encoded_data, last_packet=last)
             q_audio.put(chunk_msg)
-        elif settings.encoding == "WAV":
+        else:
             print("On next: last chunk")
             chunk_msg = recognizeFields.StreamingRecognizeRequest(media=b'', last_packet=True)
             q_audio.put(chunk_msg)
