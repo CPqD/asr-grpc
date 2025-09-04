@@ -133,9 +133,12 @@ message RecognitionResult {
     optional AgeScore age_score = 9;
     message AgeScore {
         optional string event = 1;
-        optional int32 age = 2;
-        optional string confidence = 3;
-        map<string, double> p = 4;
+        optional int32 version = 2;
+        optional int32 age = 3;
+        optional string confidence = 4;
+        map<string, double> p = 5;
+        optional string group = 6;
+        optional string stage = 7;
     }
 
     optional EmotionScore emotion_score = 10;
