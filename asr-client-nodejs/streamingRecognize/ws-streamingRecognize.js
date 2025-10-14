@@ -44,11 +44,13 @@ wss.on("connection", function connection(ws) {
     call.write({
         config: {
             lm: [{
-                uri: "builtin:slm/general",
+                uri: "builtin:slm/sintezy",
                 content_type: "text/uri-list"
             }],
             continuous_mode: "true",
-            diarization_enabled: "true",
+            diarization: {
+                         diarization_enabled: "true"
+            },
             audio_encoding: "LINEAR16"
         }
     });

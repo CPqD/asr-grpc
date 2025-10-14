@@ -1,7 +1,7 @@
     let socket, audioContext, processorNode;
     let canvasCtx, waveformCanvas;
     let WS_PORT = 8080
-    const sampleRate = 16000;
+    const sampleRate = 8000;
     const durationSec = 40; // Show last 1 second
     const maxSamples = sampleRate * durationSec;
     let sampleBuffer = new Float32Array(maxSamples);
@@ -75,7 +75,7 @@
       output.textContent = `✅ WebSocket conectado ${WS_PORT}\n`;
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new AudioContext({ sampleRate: 16000 });
+      audioContext = new AudioContext({ sampleRate: 8000 });
 
       await audioContext.audioWorklet.addModule('worklet.js');
       processorNode = new AudioWorkletNode(audioContext, 'pcm-worklet');
