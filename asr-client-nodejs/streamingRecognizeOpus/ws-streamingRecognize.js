@@ -49,7 +49,12 @@ wss.on("connection", function connection(ws) {
             }],
             continuous_mode: "true",
             diarization: {
-                         diarization_enabled: "true"
+                         diarization_enabled: "true",
+                         max_speakers: "4"
+            },
+            endpointer: {
+                        max_segment_duration: "5000",
+                        segment_overlap_time: "1000",
             },
             audio_encoding: "WAV"
         }
