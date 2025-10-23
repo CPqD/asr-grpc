@@ -67,8 +67,6 @@ def get_streaming_requests(stub, on_event=None):
                 chunk_msg = recognizeFields.StreamingRecognizeRequest(media=b'', last_packet=True)
                 q_audio.put(chunk_msg)
 
-        #if settings.encoding == "RAW":
-        #print(f"Data length: {len(encoded_data)}")
         time.sleep(settings.chunk_interval)
 
     def on_completed():
