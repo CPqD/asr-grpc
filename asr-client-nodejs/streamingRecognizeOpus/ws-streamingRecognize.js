@@ -17,16 +17,39 @@ wss.on("connection", function connection(ws) {
     call.on("data", (response) => {
         console.log("gRPC data");
         const result = response?.result?.[0];
+        const status = result?.status
+        console.log("status:" + status);
         const alternative = result?.alternatives?.[0];
-        const transcript = alternative?.text || alternative?.transcript;
-        const start = String(result?.start_time).slice(0, 5)
-        const end = String(result?.end_time).slice(0, 5)
-        ans = transcript
-        const diarization_result = result?.diarization_result;
-        if (diarization_result)
-          ans = `Spk: ${diarization_result.speaker} - [${start}-${end}]: ${transcript}`
-        else
-          ans = `Spk: unk - [${start}-${end}]: ${transcript}`
+        //const transcript = alternative?.text || alternative?.transcript;
+        let transcript = ``;
+        if (status == "RECOGNIZED") {
+          let spk = ``;
+          const start = String(result?.start_time).slice(0, 5)
+          const end = String(result?.end_time).slice(0, 5)
+          words = result?.alternatives?.[0].words
+          if (words && typeof words[Symbol.iterator] === 'function') {
+            for (const w of words) {
+              if (spk !== w.diarizationResult?.speaker) {
+                if (spk !== ``) {
+                  transcript += `] `;
+                }
+                spk = w.diarizationResult?.speaker;
+                if (spk)
+                  transcript += `[${spk}: `;
+                else
+                  transcript += `[unk: `;
+              }
+              transcript += w.text + ` `;
+            }
+            transcript += `] `;
+          }
+          ans = transcript
+          const diarization_result = result?.diarization_result;
+          if (diarization_result)
+            ans = `spk: ${diarization_result.speaker} - [${start}-${end}]: ${transcript}`
+          else
+            ans = `spk: unk - [${start}-${end}]: ${transcript}`
+        }
 
         if (transcript) {
             ws.send(`🗣️ ${ans}`);
@@ -53,7 +76,7 @@ wss.on("connection", function connection(ws) {
                          max_speakers: "4"
             },
             endpointer: {
-                        max_segment_duration: "5000",
+                        max_segment_duration: "10000",
                         segment_overlap_time: "1000",
             },
             audio_encoding: "WAV"
