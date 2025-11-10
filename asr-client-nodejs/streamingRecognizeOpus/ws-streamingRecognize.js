@@ -20,7 +20,6 @@ wss.on("connection", function connection(ws) {
         const status = result?.status
         console.log("status:" + status);
         const alternative = result?.alternatives?.[0];
-        //const transcript = alternative?.text || alternative?.transcript;
         let transcript = ``;
         if (status == "RECOGNIZED") {
           let spk = ``;
@@ -64,6 +63,10 @@ wss.on("connection", function connection(ws) {
         ws.send("✅ gRPC stream ended");
     });
 
+    call.on("status", (status) => {
+      console.log("gRPC status:", status);
+    });
+
     call.write({
         config: {
             lm: [{
@@ -100,8 +103,18 @@ wss.on("connection", function connection(ws) {
     ws.on("close", () => {
       console.log("Closed");
       stream.end();
-      call.write({ media: Uint8Array.of(0), last_packet: true }); 
-      call.end();
+      const finalize = () => {
+        console.log("Finalizing gRPC call");
+        call.write({ media: Uint8Array.of(0), stop: true });
+        call.end();
+      };
+
+      if (!call.writableEnded) {
+        console.log("Waiting flush!");
+        setTimeout(finalize, 200); // let it flush
+      } else {
+        finalize();
+      }
     }); 
 });
 
