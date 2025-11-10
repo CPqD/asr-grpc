@@ -75,7 +75,7 @@
       output.textContent = `✅ WebSocket conectado ${WS_PORT}\n`;
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new AudioContext({ sampleRate: 8000 });
+      audioContext = new AudioContext({ sampleRate: 16000 });
 
       await audioContext.audioWorklet.addModule('worklet.js');
       processorNode = new AudioWorkletNode(audioContext, 'pcm-worklet');
