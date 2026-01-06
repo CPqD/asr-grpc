@@ -70,9 +70,9 @@ CONTINUOUS_MODE="true/false"
 #DO_CANCEL=30
 
 # Control audio chunks for streaming recognize
-# to simulate realtime audio use interval = 0.1s
+# to simulate realtime audio use interval = 0.05s (8000 samples/s or 16000 bytes/s)
 # and raw audio
-CHUNK_INTERVAL=0.1
+CHUNK_INTERVAL=0.05
 CHUNK_SIZE=800
 
 # gRPC Timeout
