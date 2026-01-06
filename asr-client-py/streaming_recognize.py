@@ -32,9 +32,11 @@ def execute_streaming_recognize():
             print(type(e).__name__)
             raise TestStopException("Finalizando o teste com falha.")
     except Exception as e:
+        print("< nok >")
         raise e
 
 def get_streaming_requests(stub, on_event=None):
+    last_seg_rcv = False
     client.print_message("Streaming:" + settings.audio_name)
     file_name = settings.audio_name
     audio_file = open(file_name, "rb")
@@ -46,25 +48,33 @@ def get_streaming_requests(stub, on_event=None):
 
     # Envia dados codificados para a fila
     def on_next(encoded_data):
-        last = False
-        if settings.do_cancel > 0:
-            settings.do_cancel -= 1
-            if settings.do_cancel == 0:
-                print("Will Cancel")
-                last = True
-        if len(encoded_data):
-            chunk_msg = recognizeFields.StreamingRecognizeRequest(media=encoded_data, last_packet=last)
-            q_audio.put(chunk_msg)
-        else:
-            print("On next: last chunk")
-            chunk_msg = recognizeFields.StreamingRecognizeRequest(media=b'', last_packet=True)
-            q_audio.put(chunk_msg)
+        cancel = False
+        if settings.do_cancel >= 0:
+            if settings.do_cancel > 0:
+                settings.do_cancel -= 1
+                if settings.do_cancel == 0:
+                    print("Will Cancel")
+                    cancel = True
+                    settings.do_cancel = -1
+            if len(encoded_data):
+                if not cancel and not last_seg_rcv:
+                    chunk_msg = recognizeFields.StreamingRecognizeRequest(media=encoded_data, last_packet=False)
+                else:
+                    chunk_msg = recognizeFields.StreamingRecognizeRequest(stop=True)
+                q_audio.put(chunk_msg)
+            else:
+                print("On next: last chunk")
+                chunk_msg = recognizeFields.StreamingRecognizeRequest(media=b'', last_packet=True)
+                q_audio.put(chunk_msg)
 
-        #if settings.encoding == "RAW":
-        #print(f"Data length: {len(encoded_data)}")
         time.sleep(settings.chunk_interval)
 
     def on_completed():
+        print("< On Completed >")
+        while not last_seg_rcv:
+            print(f'Waiting: {last_seg_rcv}')
+            time.sleep(1)
+        time.sleep(settings.chunk_interval)
         q_audio.put(None)
 
     def encode_audio(waveform: bytes) -> bytes:
@@ -111,15 +121,21 @@ def get_streaming_requests(stub, on_event=None):
             if chunk is None:
                 print("<End of Audio>")
                 break
+            if last_seg_rcv:
+                print("<Last Segment Received>")
+                break
             yield chunk
 
-    # Processa a resposta da diarização em tempo real
+    # Processa a resposta em tempo real
     try:
         for event in stub.StreamingRecognize(request_generator()):
             if on_event:
                 on_event(event)
             else:
                 print(f"{event}")
+            for r in event.result:
+                if r.last_segment:
+                    last_seg_rcv = True
     except Exception as e:
         print(f"Erro no streaming gRPC: {e}")
         raise e
@@ -135,6 +151,9 @@ async def get_message(audio_chunk, last, stop = False):
 if __name__ == "__main__":
     try:
         execute_streaming_recognize()
+        print("< ok >")
         exit(0)
     except Exception as e:
+        print("< nok >")
+        print(e)
         exit(1)

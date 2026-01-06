@@ -17,11 +17,14 @@ class Settings(BaseSettings):
     metadata: str = ""
     use_tls: bool = False
     language_model_uri: str = ""
+    definition_file: str = ""
+    grammar_id: str = ""
     audio_name: str = ""
     do_age_class: bool = False
     do_gender_class: bool = False
     do_emotion_class: bool = False
     continuous_mode: bool = False
+    recognition_timeout: int = 10000
     do_cancel: int = 0
     timeout: int = 2
     chunk_interval: float = 0.005
@@ -83,7 +86,13 @@ def create_stub():
 
 
 def get_config():
-    language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="text/uri-list",
+    if len(settings.definition_file):
+        with open(settings.definition_file, "r") as f:
+            language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="application/octet-stream",
+                                                                             definition=f.read(),
+                                                                             id=settings.grammar_id)
+    else:
+        language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="text/uri-list",
                                                                      uri=settings.language_model_uri)
     if settings.encoding == "WAV":
         audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.WAV
@@ -94,6 +103,7 @@ def get_config():
                                              age_scores_enabled=settings.do_age_class,
                                              gender_scores_enabled=settings.do_gender_class,
                                              emotion_scores_enabled=settings.do_emotion_class,
+                                             recognition_timeout= settings.recognition_timeout,
                                              continuous_mode=settings.continuous_mode)
 
 
@@ -101,6 +111,9 @@ def print_message(message):
     print("\n#################################################")
     print("############# {} #############".format(message))
     print("#################################################\n")
+
+def trunc_time(t):
+    return round(t, 2)
 
 def print_result(response):
     def get_status(status):
@@ -150,6 +163,8 @@ def print_result(response):
                     speaker = r.diarization_result.speaker
                 print(f"  {id}: status={get_status(r.status)}")
                 if len(r.alternatives):
+                    start = r.start_time
+                    end = r.end_time
                     text=r.alternatives[0].text
                     if r.age_score.event == "AGE RESULT":
                         age = r.age_score.age
@@ -157,6 +172,6 @@ def print_result(response):
                         gender = r.gender_score.gender
                     if r.emotion_class.event == "EMOTION RESULT":
                         emotion = r.emotion_class.emotion
-                    print(f"  {id}: age={age} gender={gender} emotion={emotion} speaker={speaker} - {text}")
+                    print(f"  {id} [{trunc_time(start)}-{trunc_time(end)}]: age={age} gender={gender} emotion={emotion} speaker={speaker} - {text}")
                 else:
                     print(f"  {id}: status={get_status(r.status)}")
