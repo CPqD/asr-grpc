@@ -30,6 +30,9 @@ message RecognitionConfig {
     optional bool start_input_timers = 23;
     optional bool endpointer_enabled = 24;
     optional string interpret_text = 25;
+    optional bool partial_result_enabled = 26;
+    optional int32 partial_result_interval = 27;
+    optional DiarizationConfig diarization = 28;
 
     message LanguageModel {
         optional string content_type = 1;
@@ -37,7 +40,18 @@ message RecognitionConfig {
         optional string definition = 3;
         optional string id = 4;
     }
-    
+
+    message DiarizationConfig {
+        optional bool diarization_enabled = 1;
+        optional uint32 max_speakers = 2;
+        optional float latency = 3;
+        optional float tau_active = 4;
+        optional float rho_update = 5;
+        optional float delta_new = 6;
+        optional float gamma = 7;
+        optional float beta = 8;
+    }
+
     enum AudioEncoding {
         UNSPECIFIED = 0;
         LINEAR16 = 1;
@@ -58,6 +72,8 @@ message RecognitionConfig {
         optional LevelMode level_mode = 5;
         optional int32 level_threshold = 6;
         optional int32 auto_level_len = 7;
+        optional int32 max_segment_duration = 8;
+        optional int32 segment_overlap_time = 9;
 
         enum LevelMode {
             IGNORE = 0;
@@ -107,6 +123,11 @@ message RecognitionResult {
         FAILURE = 10;
     }
 
+    message DiarizationResult {
+        optional string speaker = 1;
+        optional float confidence = 2;
+    }
+
     message RecognitionAlternative {
         string text = 1;
         int32 score = 2;
@@ -120,6 +141,7 @@ message RecognitionResult {
             int32 score = 2;
             float startTime = 3;
             float endTime = 4;
+            optional DiarizationResult diarizationResult = 5;
         }
     }
 
@@ -155,6 +177,7 @@ message RecognitionResult {
         optional string event = 1;
         optional string emotion = 2;
     }
+    optional DiarizationResult diarization_result = 12;
 }
 
 message RecognizeRequest {

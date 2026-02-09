@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     do_age_class: bool = False
     do_gender_class: bool = False
     do_emotion_class: bool = False
+    do_diarization: bool = False
     continuous_mode: bool = False
     recognition_timeout: int = 10000
     do_cancel: int = 0
@@ -31,6 +32,7 @@ class Settings(BaseSettings):
     chunk_size: int = -1
     encoding: str = "WAV"
     token_url: str = ""
+    debug_level: str = "INFO"
     token_user: str = ""
     token_password: str = ""
 
@@ -51,6 +53,7 @@ def get_token():
     raise Exception("Fail to get token!")
 
 def create_stub():
+
     server=settings.server_url
     if len(server) == 0:
         print("Missing Server URL!!! \n")
@@ -94,6 +97,8 @@ def get_config():
     else:
         language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="text/uri-list",
                                                                      uri=settings.language_model_uri)
+    diarization = recognizeFields.RecognitionConfig.DiarizationConfig(diarization_enabled=settings.do_diarization, max_speakers=4)
+
     if settings.encoding == "WAV":
         audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.WAV
     else:
@@ -103,7 +108,9 @@ def get_config():
                                              age_scores_enabled=settings.do_age_class,
                                              gender_scores_enabled=settings.do_gender_class,
                                              emotion_scores_enabled=settings.do_emotion_class,
+                                             diarization=diarization,
                                              recognition_timeout= settings.recognition_timeout,
+                                             noinput_timeout_enabled=False,
                                              continuous_mode=settings.continuous_mode)
 
 
