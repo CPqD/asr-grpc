@@ -25,14 +25,19 @@ class Settings(BaseSettings):
     do_emotion_class: bool = False
     do_diarization: bool = False
     continuous_mode: bool = False
+    partial_result_enabled: bool = False
+    partial_result_interval: int = 1000
+    max_segment_duration: int = 10000
+    segment_overlap_time: int = 1000
+    wait_end: int = 1000
     recognition_timeout: int = 10000
     do_cancel: int = 0
     timeout: int = 2
     chunk_interval: float = 0.005
     chunk_size: int = -1
+    sample_rate: int = -1
     encoding: str = "WAV"
     token_url: str = ""
-    debug_level: str = "INFO"
     token_user: str = ""
     token_password: str = ""
 
@@ -53,6 +58,16 @@ def get_token():
     raise Exception("Fail to get token!")
 
 def create_stub():
+    ##access_token=os.getenv('SL_TOKEN')
+
+    ##f = open('keys/server.p12')
+    ##f = open('keys/ca.crt', 'rb').read()
+    ##f = open('keys/public.pem', 'rb').read()
+
+    ##channel_credentials = grpc.ssl_channel_credentials(private_key=f.read())
+
+    ##call_credentials = grpc.access_token_call_credentials(access_token)
+    ##channel_credentials = grpc.composite_channel_credentials(channel_credentials, call_credentials)
 
     server=settings.server_url
     if len(server) == 0:
@@ -63,6 +78,8 @@ def create_stub():
     if settings.use_tls:
         certificate=settings.certificate_file
         if not certificate:
+            #certificate='keys/fzaruch.pem'"
+            #certificate='keys/asrgrpc.pem'
             certificate="sl-cpqd-com-br.pem"
             print("Missed certificate using: " + certificate)
         f = open(certificate, 'rb').read()
@@ -70,10 +87,14 @@ def create_stub():
         cn=f.decode()[i:]
         cert_cn = cn[5:cn.find('\n')]
         options = (('','',),)
+        #options = (('grpc.ssl_target_name_override', cert_cn,),)
         options += (('grpc.tls_skip_hostname_verification', 'true',),)
+        #print("cert: {}".format(f))
+        #print("cert_cn: {}".format(cert_cn))
         channel_credentials = grpc.ssl_channel_credentials(f)
         print("Secure connection to: " + server)
         channel = grpc.secure_channel(server, channel_credentials, options=options)
+        print('OK')
     else:
         print("Insecure connection to: " + server)
         channel = grpc.insecure_channel(server)
@@ -98,6 +119,9 @@ def get_config():
         language_model = recognizeFields.RecognitionConfig.LanguageModel(content_type="text/uri-list",
                                                                      uri=settings.language_model_uri)
     diarization = recognizeFields.RecognitionConfig.DiarizationConfig(diarization_enabled=settings.do_diarization, max_speakers=4)
+    endpointer_config = recognizeFields.RecognitionConfig.EndpointerConfig(max_segment_duration=settings.max_segment_duration,
+                                                                           segment_overlap_time=settings.segment_overlap_time,
+                                                                           wait_end=settings.wait_end)
 
     if settings.encoding == "WAV":
         audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.WAV
@@ -105,12 +129,14 @@ def get_config():
         audio_encoding=recognizeFields.RecognitionConfig.AudioEncoding.LINEAR16
     return recognizeFields.RecognitionConfig(lm=[language_model],
                                              audio_encoding=audio_encoding,
+                                             sample_rate= settings.sample_rate if settings.sample_rate else None,
                                              age_scores_enabled=settings.do_age_class,
                                              gender_scores_enabled=settings.do_gender_class,
                                              emotion_scores_enabled=settings.do_emotion_class,
-                                             diarization=diarization,
                                              recognition_timeout= settings.recognition_timeout,
                                              noinput_timeout_enabled=False,
+                                             diarization=diarization,
+                                             endpointer=endpointer_config,
                                              continuous_mode=settings.continuous_mode)
 
 
@@ -165,20 +191,33 @@ def print_result(response):
         gender="null"
         for r in response.result:
                 id=r.segment_index
-                speaker = "unknown"
-                if r.HasField('diarization_result'):
-                    speaker = r.diarization_result.speaker
+                speaker = ""
+                age=""
+                gender=""
+                emotion=""
                 print(f"  {id}: status={get_status(r.status)}")
                 if len(r.alternatives):
                     start = r.start_time
                     end = r.end_time
                     text=r.alternatives[0].text
                     if r.age_score.event == "AGE RESULT":
-                        age = r.age_score.age
+                        age = f'age={r.age_score.age} '
                     if r.gender_score.event == "GENDER RESULT":
-                        gender = r.gender_score.gender
+                        gender = f'gender={r.gender_score.gender} '
                     if r.emotion_class.event == "EMOTION RESULT":
-                        emotion = r.emotion_class.emotion
-                    print(f"  {id} [{trunc_time(start)}-{trunc_time(end)}]: age={age} gender={gender} emotion={emotion} speaker={speaker} - {text}")
+                        emotion = f'emotion={r.emotion_class.emotion} '
+                    if r.HasField('diarization_result'):
+                        speaker = f'speaker={r.diarization_result.speaker} '
+                        text=""
+                        spk=""
+                        for w in r.alternatives[0].words:
+                            if spk != w.diarizationResult.speaker:
+                                if spk != "":
+                                    text += "] "
+                                spk = w.diarizationResult.speaker
+                                text += ("[" + spk + ": ")
+                            text += (w.text + " ")
+                        text += "] "
+                    print(f"  R{id} [{trunc_time(start)}-{trunc_time(end)}]: {age}{gender}{emotion}{speaker}- {text}")
                 else:
                     print(f"  {id}: status={get_status(r.status)}")
